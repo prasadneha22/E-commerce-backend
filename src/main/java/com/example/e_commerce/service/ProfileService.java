@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ProfileService {
 
@@ -63,5 +66,42 @@ public class ProfileService {
         }catch (Exception e){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error updating profile",e);
         }
+    }
+
+    public List<UserDto> getAllProfiles(String token) {
+
+        try{
+            String userRole = jwtService.extractUserRole(token);
+            Long userId = jwtService.extractUserId(token);
+
+            System.out.println("User id is : " + userId);
+            System.out.println("role is : " + userRole);
+
+            Users adminUser = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin user not found"));
+
+            if(!"ADMIN".equalsIgnoreCase(userRole)){
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Access Denied! Only Admins can view all users");
+            }
+
+            return userRepository.findAll().stream()
+                    .map( u -> new UserDto(
+                            u.getId(),
+                            u.getFirstname(),
+                            u.getLastname(),
+                            u.getEmail(),
+                            u.getPhoneNumber(),
+                            u.getCreatedAt(),
+                            u.getUpdatedAt(),
+                            u.getRole(),
+                            u.getAddresses()))
+                    .collect(Collectors.toList());
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Error fetching users",e);
+        }
+
+
+
+
     }
 }

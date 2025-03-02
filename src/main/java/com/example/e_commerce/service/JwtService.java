@@ -45,7 +45,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(users.getEmail())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 43200000))
+                .expiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getKey())
                 .compact();
     }
@@ -63,7 +63,7 @@ public class JwtService {
     }
 
     public String extractUserRole(String token){
-        return extractClaim(token,claims -> (String) claims.get("role"));
+        return extractClaim(token,claims -> claims.get("role").toString());
     }
 
     private <T> T extractClaim(String token, Function<Claims,T> claimResolver){
@@ -81,6 +81,12 @@ public class JwtService {
 
     public boolean validateToken(String token, UserDetails userDetails) {
         final String email = extractEmail(token);
+        final Date expiration = extractExpiration(token);
+
+        System.out.println("extracted email: " + email);
+        System.out.println("user details" + userDetails.getUsername());
+        System.out.println("token expired at: " + expiration);
+        System.out.println("Current time : " + new Date());
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 

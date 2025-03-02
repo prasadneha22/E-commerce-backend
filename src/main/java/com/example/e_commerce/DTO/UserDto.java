@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -15,7 +16,77 @@ public class UserDto {
     private String lastname;
     private String email;
     private String phoneNumber;
+    private boolean isActive = true;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Role role;
     private List<Address> addresses;
+
+    public UserDto(){
+
+    }
+
+    public UserDto(Long id, String firstname, String lastname, String email, String phoneNumber, LocalDateTime createdAt, LocalDateTime updatedAt, Role role, List<Address> addresses) {
+        this.id = id;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.role = role;
+        this.addresses = addresses;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return "UserDto{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", email='" + email + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", isActive=" + isActive +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", role=" + role +
+                ", addresses=" + addresses +
+                '}';
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     public Long getId() {
         return id;
@@ -63,18 +134,6 @@ public class UserDto {
 
     public void setAddresses(List<Address> addresses) {
         this.addresses = addresses;
-    }
-
-    @Override
-    public String toString() {
-        return "UserDto{" +
-                "id=" + id +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", addresses=" + addresses +
-                '}';
     }
 
     public UserDto(Long id, String firstname, String lastname, String email, String phoneNumber, List<Address> addresses) {

@@ -6,9 +6,11 @@ import com.example.e_commerce.service.ProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,5 +49,30 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Updating profile: " +e.getMessage());
         }
     }
+
+
+    @GetMapping("/profiles")
+    public ResponseEntity<?> getAllProfiles(@RequestHeader("Authorization") String token){
+        if(token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
+        try{
+            List<UserDto> profiles = profileService.getAllProfiles(token);
+
+            if(profiles.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No task found for this user.");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(profiles);
+        }catch (RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error " + e.getMessage());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred!");
+        }
+
+    }
+
+
+
+
 
 }
