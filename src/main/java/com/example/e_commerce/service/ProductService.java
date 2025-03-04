@@ -9,8 +9,11 @@ import com.example.e_commerce.repository.ProductRepository;
 import com.example.e_commerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Service
 public class ProductService {
@@ -98,5 +101,38 @@ public class ProductService {
 
         Product updatedProduct = productRepository.save(product);
         return new ProductDto(updatedProduct);
+    }
+
+    public void deleteProduct(String token, Long productId) {
+        Long userId = jwtService.extractUserId(token);
+        String userRole = jwtService.extractUserRole(token);
+
+        if(!"SELLER".equalsIgnoreCase(userRole)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Access denied!, Only seller can delete the product.");
+        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        if (!product.getUser().getId().equals(userId)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Unauthorized! ypu can only delete your own product.");
+        }
+
+        productRepository.delete(product);
+    }
+
+
+
+    public List<ProductDto> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return products.stream().map(ProductDto::new).toList();
+    }
+
+    public ProductDto getProductById(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + id));
+
+        return new ProductDto(product);
     }
 }

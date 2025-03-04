@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -47,5 +49,42 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
+
+    @GetMapping("/get")
+    public ResponseEntity<?> getAllProducts(){
+        try{
+            List<ProductDto> products = productService.getAllProducts();
+            return ResponseEntity.ok(products);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable Long id){
+        try{
+            ProductDto product = productService.getProductById(id);
+            return ResponseEntity.ok(product);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{productId}")
+    public ResponseEntity<?> deleteProduct(@RequestHeader("Authorization") String token, @PathVariable Long productId){
+        if(token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
+        try{
+            productService.deleteProduct(token,productId);
+            return ResponseEntity.ok("Product deleted successfully");
+        }catch(RuntimeException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected Error occurred.");
+        }
+    }
+
+
 
 }
