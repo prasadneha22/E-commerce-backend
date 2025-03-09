@@ -31,4 +31,7 @@ public class ProductDto {
         this.isActive = product.getIsActive();
         this.categoryId = (product.getCategory() != null) ? product.getCategory().getId() : null;
     }
+
+    public ProductDto(Long id, String name, String description) {
+    }
 }
