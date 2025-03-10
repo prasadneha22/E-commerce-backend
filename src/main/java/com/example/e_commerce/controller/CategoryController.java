@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.PrimitiveIterator;
@@ -36,12 +37,10 @@ public class CategoryController {
     }
 
     @GetMapping("/category-list")
-    public ResponseEntity<?> getAllCategories(@RequestHeader("Authorization") String token){
-        if(token.startsWith("Bearer ")){
-            token = token.substring(7);
-        }
+    public ResponseEntity<?> getAllCategories(){
+
         try{
-            List<CategoryDto> categoryList = categoryService.getAllCategories(token);
+            List<CategoryDto> categoryList = categoryService.getAllCategories();
             return ResponseEntity.ok(categoryList);
         }catch (RuntimeException e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error :" + e.getMessage());
@@ -51,10 +50,45 @@ public class CategoryController {
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<?> getCategoryById(@RequestParam Long categoryId){
-        tr
+    public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId){
+        try{
+            CategoryDto categoryDto = categoryService.getCategoryById(categoryId);
+            return ResponseEntity.ok(categoryDto);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        }
+    }
+
+    @PutMapping("/update/{categoryId}")
+    public ResponseEntity<?> updateCategory(@RequestHeader("Authorization") String token ,@PathVariable Long categoryId, @RequestBody CategoryDto categoryDto){
+        if(token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
+        try{
+            CategoryDto updateResponse = categoryService.updateCategory(token,categoryId,categoryDto);
+            return ResponseEntity.ok(updateResponse);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteCategory(@RequestHeader("Authorization") String token,@PathVariable Long id){
+        if(token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
+        try{
+            categoryService.deleteCategory(token,id);
+            return ResponseEntity.ok("Category deleted successfully.");
+
+        }catch (ResponseStatusException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getReason());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("something went wrong!");
+        }
     }
 
 
-    }
+}
 
