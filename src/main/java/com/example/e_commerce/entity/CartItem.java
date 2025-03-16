@@ -1,12 +1,12 @@
 package com.example.e_commerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItem {
@@ -16,6 +16,7 @@ public class CartItem {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "cart_id",nullable = false)
     private Cart cart;
 
