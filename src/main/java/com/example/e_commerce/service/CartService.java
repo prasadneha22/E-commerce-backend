@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -71,5 +74,73 @@ public class CartService {
     }
 
 
+    public CartRequest addCartItem(String token, CartItemRequest cartItemRequest) {
+        Long userId = jwtService.extractUserId(token);
+        String userRole = jwtService.extractUserRole(token);
+
+        if(!"BUYER".equalsIgnoreCase(userRole)){
+            throw new RuntimeException("Only buyers can add cart items.");
+        }
+
+        Users buyer = userRepository.findById(userId)
+                .orElseThrow(()->new RuntimeException("User not found!"));
+
+        Cart cart = cartRepository.findByUsers(buyer)
+                .orElseThrow(()->new RuntimeException("Cart not found!"));
+
+        Product product = productRepository.findById(cartItemRequest.getProductId())
+                .orElseThrow(()->new RuntimeException("Product not found!"));
+
+        if(product.getStock() < cartItemRequest.getQuantity()){
+            throw new RuntimeException("Not enough stock available for this product.");
+        }
+
+        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
+                        .filter(item ->item.getProduct().getId().equals(product.getId()))
+                                .findFirst();
+
+        if(existingCartItem.isPresent()){
+            CartItem cartItem = existingCartItem.get();
+            cartItem.setQuantity(cartItem.getQuantity() + cartItemRequest.getQuantity());
+            cartItem.updateSubtotal();
+        }else{
+            CartItem cartItem = new CartItem();
+            cartItem.setCart(cart);
+            cartItem.setProduct(product);
+            cartItem.setQuantity(cartItemRequest.getQuantity());
+            cartItem.updateSubtotal();
+            cart.getCartItems().add(cartItem);
+        }
+        product.setStock(product.getStock()- cartItemRequest.getQuantity());
+        productRepository.save(product);
+
+        cart.updateTotalAmount();
+        Cart updatedCart = cartRepository.save(cart);
+        return convertToCartResponse(updatedCart);
+
     }
+
+    private CartRequest convertToCartResponse(Cart cart) {
+        CartRequest response = new CartRequest();
+        response.setCartId(cart.getId());
+        response.setUserId(cart.getUsers().getId());
+        response.setUserName(cart.getUsers().getFirstname() + " " + cart.getUsers().getLastname());
+        response.setTotalAmount(cart.getTotalAmount());
+
+        List<CartItemRequest> cartItemResponses = cart.getCartItems().stream().map(item -> {
+            CartItemRequest itemResponse = new CartItemRequest();
+            itemResponse.setId(item.getId());
+            itemResponse.setProductId(item.getProduct().getId());
+            itemResponse.setProductName(item.getProduct().getName());
+            itemResponse.setProductPrice(item.getProduct().getPrice());
+            itemResponse.setQuantity(item.getQuantity());
+            itemResponse.setSubtotal(item.getSubtotal());
+            return itemResponse;
+        }).collect(Collectors.toList());
+
+        response.setCartItems(cartItemResponses);
+        return response;
+    }
+
+}
 
