@@ -142,5 +142,30 @@ public class CartService {
         return response;
     }
 
+    public List<CartItemRequest> getCartItems(String token) {
+        Long userId = jwtService.extractUserId(token);
+        String userRole = jwtService.extractUserRole(token);
+
+        if(!"BUYER".equalsIgnoreCase(userRole)){
+            throw new RuntimeException("Only buyers can access cart items.");
+        }
+
+       Users users = userRepository.findById(userId)
+               .orElseThrow(()-> new RuntimeException("User not found!"));
+
+
+       Cart cart = cartRepository.findByUsers(users)
+               .orElseThrow(()->new RuntimeException("User not found!"));
+
+       return cart.getCartItems().stream().map(item -> {
+           CartItemRequest itemResponse = new CartItemRequest();
+           itemResponse.setProductName(item.getProduct().getName());
+           itemResponse.setProductPrice(item.getProduct().getPrice());
+           itemResponse.setQuantity(item.getQuantity());
+           itemResponse.setSubtotal(item.getSubtotal());
+           return itemResponse;
+       }).collect(Collectors.toList());
+
+    }
 }
 
