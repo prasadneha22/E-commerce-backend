@@ -8,10 +8,15 @@ import com.example.e_commerce.repository.CategoryRepository;
 import com.example.e_commerce.repository.ProductRepository;
 import com.example.e_commerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.server.ResponseStatusException;
+
 
 import java.util.List;
 
@@ -123,10 +128,7 @@ public class ProductService {
 
 
 
-    public List<ProductDto> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(ProductDto::new).toList();
-    }
+
 
     public ProductDto getProductById(Long id) {
 
@@ -134,5 +136,10 @@ public class ProductService {
                 .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + id));
 
         return new ProductDto(product);
+    }
+
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        Page<Product> productPage = productRepository.findAll(pageable);
+        return productPage.map(ProductDto::new);
     }
 }

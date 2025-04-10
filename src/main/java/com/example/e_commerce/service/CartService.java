@@ -11,12 +11,10 @@ import com.example.e_commerce.repository.ProductRepository;
 import com.example.e_commerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -167,5 +165,52 @@ public class CartService {
        }).collect(Collectors.toList());
 
     }
+
+
+    public CartRequest updateCartItemQuantity(String token, CartItemRequest cartItemRequest) {
+        Long userId = jwtService.extractUserId(token);
+        String role = jwtService.extractUserRole(token);
+
+        if(!"BUYER".equalsIgnoreCase(role)){
+            throw new RuntimeException("Only buyers can update the cart");
+        }
+
+        Users user1 = userRepository.findById(userId)
+                .orElseThrow(()->new RuntimeException("User not found."));
+
+        Cart cart = cartRepository.findByUsers(user1)
+                .orElseThrow(()->new RuntimeException("Cart not found"));
+
+        CartItem item = cart.getCartItems().stream()
+                .filter(i->i.getProduct().getId().equals(cartItemRequest.getProductId()))
+                .findFirst()
+                .orElseThrow(()->new RuntimeException("Product not found in cart."));
+
+        item.setQuantity(cartItemRequest.getQuantity());
+        item.setSubtotal(item.getProduct().getPrice()*cartItemRequest.getQuantity());
+
+        cart.updateTotalAmount();
+        cartRepository.save(cart);
+
+        CartRequest cartResponse = new CartRequest();
+        cartResponse.setCartId(cart.getId());
+        cartResponse.setUserId(user1.getId());
+        cartResponse.setUserName(user1.getFirstname());
+        cartResponse.setTotalAmount(cart.getTotalAmount());
+
+        List<CartItemRequest> itemResponses = cart.getCartItems().stream().map(i -> {
+            CartItemRequest res = new CartItemRequest();
+            res.setProductId(i.getProduct().getId());
+            res.setProductName(i.getProduct().getName());
+            res.setProductPrice(i.getProduct().getPrice());
+            res.setQuantity(i.getQuantity());
+            res.setSubtotal(i.getSubtotal());
+            return res;
+        }).collect(Collectors.toList());
+
+        cartResponse.setCartItems(itemResponses);
+        return cartResponse;
+    }
+
 }
 

@@ -67,5 +67,17 @@ public class CartController {
     }
 
     @PutMapping("/cart-update")
-    public ResponseEntity<?> updateCartItem(@RequestHeader("Authorization") String token, @)
+    public ResponseEntity<CartRequest> updateCartItem(@RequestHeader("Authorization") String token, @RequestBody CartItemRequest cartItemRequest) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        try {
+            CartRequest updatedCart = cartService.updateCartItemQuantity(token, cartItemRequest);
+            return ResponseEntity.ok(updatedCart);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

@@ -4,6 +4,10 @@ import com.example.e_commerce.DTO.ProductDto;
 import com.example.e_commerce.entity.Product;
 import com.example.e_commerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,10 +55,11 @@ public class ProductController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getAllProducts(){
+    public ResponseEntity<?> getAllProducts(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "5") int size, @RequestParam(defaultValue = "name") String sortBy){
         try{
-            List<ProductDto> products = productService.getAllProducts();
-            return ResponseEntity.ok(products);
+            Pageable pageable = PageRequest.of(page,size, Sort.by(sortBy));
+            Page<ProductDto> productPage = productService.getAllProducts(pageable);
+            return ResponseEntity.ok(productPage);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
