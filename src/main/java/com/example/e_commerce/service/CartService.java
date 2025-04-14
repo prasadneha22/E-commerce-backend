@@ -58,6 +58,7 @@ public class CartService {
             CartItem cartItem = new CartItem();
             cartItem.setCart(cart1); // ✅ Prevents null error
             cartItem.setProduct(product);
+            cartItem.setProductPrice(product.getPrice());
             cartItem.setQuantity(itemRequest.getQuantity());
             cartItem.updateSubtotal();
 
@@ -212,5 +213,48 @@ public class CartService {
         return cartResponse;
     }
 
+
+//    public CartItemRequest removeItem(String token, CartItemRequest cartItemRequest) {
+//
+//        Long userId = jwtService.extractUserId(token);
+//        String role = jwtService.extractUserRole(token);
+//
+//        if(!"BUYER".equalsIgnoreCase(role)){
+//            throw new RuntimeException("Only buyers can update the cart");
+//        }
+//
+//        Users user1 = userRepository.findById(userId)
+//                .orElseThrow(()->new RuntimeException("User not found"));
+//
+//        Cart cart = cartRepository.findByUsers(user1)
+//                .orElseThrow(()-> new RuntimeException("Cart not found"));
+//
+//        Optional<CartItem> itemToRemove = cart.getCartItems().stream()
+//                .filter(item ->item.getProduct().getId().equals(cartItemRequest.getProductId()))
+//                .findFirst();
+//
+//        if (itemToRemove.isEmpty()) {
+//            throw new RuntimeException("Product not found in cart");
+//        }
+//
+//        CartItem itemToDelete = itemToRemove.get();
+//
+//        // Build DTO before deletion
+//        CartItemRequest deletedItemDto = new CartItemRequest();
+//        deletedItemDto.setId(itemToRemove.getId());
+//        deletedItemDto.setProductId(itemToRemove.getProduct().getId());
+//        deletedItemDto.setProductName(itemToRemove.getProduct().getName());
+//        deletedItemDto.setProductPrice(itemToRemove.getProduct().getPrice());
+//        deletedItemDto.setQuantity(itemToRemove.getQuantity());
+//        deletedItemDto.setSubtotal(itemToRemove.getSubtotal());
+//
+//        cart.getCartItems().remove(itemToDelete);
+//        cartItemRepository.delete(itemToRemove);
+//
+//        cart.updateTotalAmount();
+//        cartRepository.save(cart);
+//
+//        return deletedItemDto;
+//    }
 }
 

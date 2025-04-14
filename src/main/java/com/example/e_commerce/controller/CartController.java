@@ -27,7 +27,7 @@ public class CartController {
         }
         try{
             Cart createdCart = cartService.addCart(token,cartRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(cartRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdCart);
         }catch (RuntimeException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }catch (Exception e){
@@ -80,4 +80,21 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+//    @DeleteMapping("/delete-item")
+//    public ResponseEntity<CartItemRequest> deleteCartItem(@RequestHeader("Authorization")String token, @RequestBody CartItemRequest cartItemRequest){
+//
+//        if(token.startsWith("Bearer ")){
+//            token = token.substring(7);
+//        }
+//
+//        try{
+//            CartItemRequest deletedItem = cartService.removeItem(token,cartItemRequest);
+//            return ResponseEntity.ok(deletedItem);
+//        }catch (RuntimeException e){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+//        }catch (Exception e){
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        }
+//    }
 }

@@ -26,6 +26,8 @@ public class CartItem {
 
 
     private Integer quantity;
+
+    private Double productPrice;
     private Double subtotal;
 
     public void updateSubtotal(){
